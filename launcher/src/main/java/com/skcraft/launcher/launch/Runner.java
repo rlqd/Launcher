@@ -14,6 +14,7 @@ import com.skcraft.concurrency.DefaultProgress;
 import com.skcraft.concurrency.ProgressObservable;
 import com.skcraft.launcher.*;
 import com.skcraft.launcher.auth.Session;
+import com.skcraft.launcher.auth.UserType;
 import com.skcraft.launcher.install.ZipExtract;
 import com.skcraft.launcher.model.minecraft.*;
 import com.skcraft.launcher.persistence.Persistence;
@@ -142,6 +143,7 @@ public class Runner implements Callable<Process>, ProgressObservable {
         addServerArgs();
         addPlatformArgs();
         addLegacyArgs();
+        addSessionArgs();
 
         callLaunchModifier();
 
@@ -370,6 +372,15 @@ public class Runner implements Callable<Process>, ProgressObservable {
         if (versionManifest.getMinimumLauncherVersion() < 18) {
             // TODO find out exactly what versions need this hack.
             flags.add("-Dminecraft.applet.TargetDirectory=" + instance.getContentDir());
+        }
+    }
+
+    private void addSessionArgs() {
+        List<String> flags = builder.getFlags();
+
+        if (session.getUserType() != UserType.CUSTOM) {
+            //Disable ultra auth agent for mojang accounts
+            flags.add("-Dultra.auth.disabled=1");
         }
     }
 
