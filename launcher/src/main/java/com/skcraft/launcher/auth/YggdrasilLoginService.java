@@ -24,11 +24,12 @@ import java.util.Map;
  * Creates authenticated sessions using the Mojang Yggdrasil login protocol.
  */
 @RequiredArgsConstructor
-public class YggdrasilLoginService implements LoginService {
+public class YggdrasilLoginService extends AbstractUserPasswordLoginService {
 
     private final URL authUrl;
     private final String clientId;
 
+    @Override
     public Session login(String id, String password)
             throws IOException, InterruptedException, AuthenticationException {
         AuthenticatePayload payload = new AuthenticatePayload(new Agent("Minecraft"), id, password, clientId);

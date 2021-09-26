@@ -12,9 +12,7 @@ import com.skcraft.concurrency.ObservableFuture;
 import com.skcraft.concurrency.ProgressObservable;
 import com.skcraft.launcher.Configuration;
 import com.skcraft.launcher.Launcher;
-import com.skcraft.launcher.auth.AuthenticationException;
-import com.skcraft.launcher.auth.Session;
-import com.skcraft.launcher.auth.YggdrasilLoginService;
+import com.skcraft.launcher.auth.*;
 import com.skcraft.launcher.persistence.Persistence;
 import com.skcraft.launcher.swing.*;
 import com.skcraft.launcher.util.SharedLocale;
@@ -38,6 +36,7 @@ import java.util.concurrent.Callable;
 public class LoginDialog extends JDialog {
 
     private final Launcher launcher;
+    private final UserType type;
     @Getter private Session session;
 
     private final JLabel message = new JLabel(SharedLocale.tr("login.defaultMessage"));
@@ -55,10 +54,11 @@ public class LoginDialog extends JDialog {
      * @param owner the owner
      * @param launcher the launcher
      */
-    public LoginDialog(Window owner, @NonNull Launcher launcher, Optional<ReloginDetails> reloginDetails) {
+    public LoginDialog(Window owner, @NonNull Launcher launcher, UserType type, Optional<ReloginDetails> reloginDetails) {
         super(owner, ModalityType.DOCUMENT_MODAL);
 
         this.launcher = launcher;
+        this.type = type;
 
         setTitle(SharedLocale.tr("login.title"));
         initComponents();
@@ -149,12 +149,12 @@ public class LoginDialog extends JDialog {
         dispose();
     }
 
-    public static Session showLoginRequest(Window owner, Launcher launcher) {
-        return showLoginRequest(owner, launcher, null);
+    public static Session showLoginRequest(Window owner, Launcher launcher, UserType type) {
+        return showLoginRequest(owner, launcher, type, null);
     }
 
-    public static Session showLoginRequest(Window owner, Launcher launcher, ReloginDetails reloginDetails) {
-        LoginDialog dialog = new LoginDialog(owner, launcher, Optional.ofNullable(reloginDetails));
+    public static Session showLoginRequest(Window owner, Launcher launcher, UserType type, ReloginDetails reloginDetails) {
+        LoginDialog dialog = new LoginDialog(owner, launcher, type, Optional.ofNullable(reloginDetails));
         dialog.setVisible(true);
         return dialog.getSession();
     }
@@ -166,7 +166,7 @@ public class LoginDialog extends JDialog {
 
         @Override
         public Session call() throws AuthenticationException, IOException, InterruptedException {
-            YggdrasilLoginService service = launcher.getYggdrasil();
+            AbstractUserPasswordLoginService service = (AbstractUserPasswordLoginService)launcher.getLoginService(type);
             Session identity = service.login(username, password);
 
             // The presence of the identity (profile in Mojang terms) corresponds to whether the account

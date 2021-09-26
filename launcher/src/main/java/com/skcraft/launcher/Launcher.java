@@ -13,6 +13,7 @@ import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.skcraft.launcher.auth.*;
+import com.skcraft.launcher.auth.CustomLoginService;
 import com.skcraft.launcher.launch.LaunchSupervisor;
 import com.skcraft.launcher.model.minecraft.Library;
 import com.skcraft.launcher.model.minecraft.VersionManifest;
@@ -172,12 +173,18 @@ public final class Launcher {
         return new MicrosoftLoginService(getProperties().getProperty("microsoftClientId"));
     }
 
+    public CustomLoginService getCustomLogin() {
+        return new CustomLoginService(HttpRequest.url(getProperties().getProperty("customAuthUrl")));
+    }
+
     public LoginService getLoginService(UserType type) {
+        if (type == UserType.CUSTOM) {
+            return getCustomLogin();
+        }
         if (type == UserType.MICROSOFT) {
             return getMicrosoftLogin();
-        } else {
-            return getYggdrasil();
         }
+        return getYggdrasil();
     }
 
     /**

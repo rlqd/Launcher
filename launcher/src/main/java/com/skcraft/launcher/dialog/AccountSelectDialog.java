@@ -23,6 +23,7 @@ public class AccountSelectDialog extends JDialog {
 	private final JList<SavedSession> accountList;
 	private final JButton loginButton = new JButton(SharedLocale.tr("accounts.play"));
 	private final JButton cancelButton = new JButton(SharedLocale.tr("button.cancel"));
+	private final JButton addCustomButton = new JButton(SharedLocale.tr("accounts.addCustom"));
 	private final JButton addMojangButton = new JButton(SharedLocale.tr("accounts.addMojang"));
 	private final JButton addMicrosoftButton = new JButton(SharedLocale.tr("accounts.addMicrosoft"));
 	private final JButton removeSelected = new JButton(SharedLocale.tr("accounts.removeSelected"));
@@ -72,13 +73,11 @@ public class AccountSelectDialog extends JDialog {
 		buttonsPanel.addElement(loginButton);
 
 		//Login Buttons
-		JPanel loginButtonsRow = new JPanel(new BorderLayout(0, 5));
-		addMojangButton.setAlignmentX(CENTER_ALIGNMENT);
-		addMicrosoftButton.setAlignmentX(CENTER_ALIGNMENT);
-		removeSelected.setAlignmentX(CENTER_ALIGNMENT);
-		loginButtonsRow.add(addMojangButton, BorderLayout.NORTH);
-		loginButtonsRow.add(addMicrosoftButton, BorderLayout.CENTER);
-		loginButtonsRow.add(removeSelected, BorderLayout.SOUTH);
+		JPanel loginButtonsRow = new JPanel(new GridLayout(0, 1));
+		loginButtonsRow.add(addCustomButton);
+		loginButtonsRow.add(addMojangButton);
+		loginButtonsRow.add(addMicrosoftButton);
+		loginButtonsRow.add(removeSelected);
 		loginButtonsRow.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
 
 		JPanel listAndLoginContainer = new JPanel();
@@ -93,8 +92,17 @@ public class AccountSelectDialog extends JDialog {
 		loginButton.addActionListener(ev -> attemptExistingLogin(accountList.getSelectedValue()));
 		cancelButton.addActionListener(ev -> dispose());
 
+		addCustomButton.addActionListener(ev -> {
+			Session newSession = LoginDialog.showLoginRequest(this, launcher, UserType.CUSTOM);
+
+			if (newSession != null) {
+				launcher.getAccounts().update(newSession.toSavedSession());
+				setResult(newSession);
+			}
+		});
+
 		addMojangButton.addActionListener(ev -> {
-			Session newSession = LoginDialog.showLoginRequest(this, launcher);
+			Session newSession = LoginDialog.showLoginRequest(this, launcher, UserType.MOJANG);
 
 			if (newSession != null) {
 				launcher.getAccounts().update(newSession.toSavedSession());
@@ -185,7 +193,7 @@ public class AccountSelectDialog extends JDialog {
 					if (((AuthenticationException) t).isInvalidatedSession()) {
 						// Just need to log in again
 						LoginDialog.ReloginDetails details = new LoginDialog.ReloginDetails(session.getUsername(), t.getLocalizedMessage());
-						Session newSession = LoginDialog.showLoginRequest(AccountSelectDialog.this, launcher, details);
+						Session newSession = LoginDialog.showLoginRequest(AccountSelectDialog.this, launcher, session.getType(), details);
 
 						setResult(newSession);
 					}
