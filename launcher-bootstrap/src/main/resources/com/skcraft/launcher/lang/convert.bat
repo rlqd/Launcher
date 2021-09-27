@@ -1,0 +1,1 @@
+"%JAVA_HOME%\bin\native2ascii.exe" -encoding UTF-8 Bootstrap_utf8.properties Bootstrap.properties
