@@ -132,6 +132,8 @@ public class Runner implements Callable<Process>, ProgressObservable {
         }
 
         progress = new DefaultProgress(0.9, SharedLocale.tr("runner.collectingArgs"));
+
+        addClasspathIncludes();
         builder.classPath(getJarPath());
         builder.setMainClass(versionManifest.getMainClass());
 
@@ -174,6 +176,17 @@ public class Runner implements Callable<Process>, ProgressObservable {
             if (icnsPath != null) {
                 builder.getFlags().add("-Xdock:icon=" + icnsPath.getAbsolutePath());
                 builder.getFlags().add("-Xdock:name=Minecraft");
+            }
+        }
+    }
+
+    private void addClasspathIncludes() {
+        File includesDir = new File(instance.getContentDir(), "includes");
+        if (includesDir.exists() && includesDir.isDirectory()) {
+            for (File file : includesDir.listFiles()) {
+                if (file.getName().endsWith(".jar")) {
+                    builder.classPath(file);
+                }
             }
         }
     }
